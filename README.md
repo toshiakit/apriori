@@ -110,7 +110,7 @@ cols = ismember(items,ante);
 anteCount = sum(all(T(:,cols),2));
 fprintf('Support Count for Ante = %d\n',anteCount)
 anteSupport = anteCount/N;
-fprintf('Support for Ante = %.2f\n',anteSupport )
+fprintf('Support for Ante = %.2f\n',anteSupport)
 confidence = itemSetSupport/anteSupport;
 fprintf('Confidence = %.2f (= itemset support / ante support)\n',confidence)
 Support Count for Ante = 3
@@ -120,7 +120,7 @@ Confidence = 0.67 (= itemset support / ante support)
 
 Another measure of strength is lift. It compares the probability of ante and conseq happening together independently to the observed frequency of such combination. We can use respective support metrics to make this comparison.
 
-	Lift = itemset support / (ante support x conseq support))
+	Lift = itemset support / (ante support x conseq support)
 
 ```
 cols = ismember(items,conseq);
@@ -149,7 +149,7 @@ Now we know the basic concepts, we can define the goal of our analysis as findin
 
 The brute force method of those steps would have you calculate the support and confidence of all possible itemset combinations, but that would be computationally expensive, because number of candidates grows exponentially.
 
-Apriori algorithm address this issue by generating candidates selectively. To get an intuition, think about the frequency of an itemset that contains some infrequent items. That itemset will never be more frequent than the least frequent item it contains. So if you construct your candidates by combining the frequent itemsets only, starting from 1-itemset and continue to higher levels, then you avoid creating useless candidates. You can see this in action in `aprioriGen.m`.
+Apriori algorithm addresses this issue by generating candidates selectively. To get an intuition, think about the frequency of an itemset that contains some infrequent items. That itemset will never be more frequent than the least frequent item it contains. So if you construct your candidates by combining the frequent itemsets only, starting from 1-itemset and continue to higher levels, then you avoid creating useless candidates. You can see this in action in `aprioriGen.m`.
 
 Let's start with generating frequent itemsets and get their support measures. Function `findFreqItemsets()` takes cell array of vectors that represents the indices of items in items cell array. First we need to convert transactions, which is a cell array of strings, into this format. I created `numeralize()` for this purpose.
 
@@ -326,5 +326,5 @@ Rules Found            : 34
 Closing
 -------
 
-We started with a simple supermarket example to congressioal votes records, and finally web usage analysis, but we also see that you can't go far without metadata. In the next step, I would like to apply this to a real life web analytics data and see if we can learn something interesting.
+We started with a simple supermarket example, moved on to congressioal votes records, and finally web usage analysis, but we also see that you can't go far without metadata. In the next step, I would like to apply this to a real life web analytics data and see if we can learn something interesting.
 
