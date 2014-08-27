@@ -1,0 +1,116 @@
+% Let's load the dataset
+
+clearvars; close all; clc
+votes = readtable('house-votes-84.data','FileType','text',...
+    'Delimiter',',', 'ReadVariableNames',false);
+
+C = table2array(votes);
+arr = strcmp(C(:,2:end), 'y');
+arr = [arr, strcmp(C(:,2:end), 'n')];
+dem = strcmp(C(:,1),'democrat');
+rep = strcmp(C(:,1),'republican');
+arr = [dem,rep,arr];
+
+votes = cell(size(dem));
+for i = 1:length(dem)
+    votes{i} = find(arr(i,:));
+end
+
+vars = {'democrat',...
+    'republican',...
+    'handicapped infants=yes',...
+    'water project=yes',...
+    'budget resolution=yes',...
+    'physician fee freeze=yes',...
+    'el salvador=yes',...
+    'religious groups=yes',...
+    'anti satellite=yes',...
+    'nicaraguan contras=yes',...
+    'mx missile=yes',...
+    'immigration=yes',...
+    'synfuels corp=yes',...
+    'education spending=yes',...
+    'right to sue =yes',...
+    'crime=yes',...
+    'duty free=yes',...
+    'south africa=yes',...
+    'handicapped_infants_no'...,
+    'water project=no',...
+    'budget resolution=no',...
+    'physician fee freeze=no',...
+    'el salvador=no',...
+    'religious groups=no',...
+    'anti satellite=no',...
+    'nicaraguan contras=no',...
+    'mx missile=no',...
+    'immigration=no',...
+    'synfuels corp=no',...
+    'education spending=no',...
+    'right to sue=no',...
+    'crime=no',...
+    'duty free=no',...
+    'south africa=no'};
+
+% Now we generate frequent itemsets
+% minimum support threshold 0.3, but we need to use slightly lower
+% threshold because MATLAB uses double precision numbers
+minSup = 0.2988; 
+[F,S] = findFreqItemsets(votes,minSup);
+fprintf('Minimum Support        : %.2f\n', minSup)
+fprintf('Frequent Itemsets Found: %d\n', sum(arrayfun(@(x) length(x.freqSets), F)))
+fprintf('Max Level Reached      : %d-itemsets\n', length(F))
+fprintf('Number of Support Data : %d\n', length(S))
+
+% Then we genenrate some rules
+minConf = 0.9; % minimum confidence threshold 0.9
+rules = generateRules(F,S,minConf);
+fprintf('Minimum Confidence     : %.2f\n', minConf)
+fprintf('Rules Found            : %d\n\n', length(rules))
+
+% Finally, let's compare our results with the results from the PDF
+testAntes = [7,21,27;5,11,23;6,15,16;22,31,32];
+testConseqs = [2,1,2,1];
+testConf = [0.91,0.975,0.935,1];
+
+% Get the rules where 1-item conseq with party classification
+dem = rules(arrayfun(@(x) isequal(x.Conseq,1),rules));
+rep = rules(arrayfun(@(x) isequal(x.Conseq,2),rules));
+
+% Compare the results
+for i = 1:size(testAntes,1)
+    rec = dem(arrayfun(@(x) isequal(x.Ante,testAntes(i,:)),dem));
+    rec = [rec,rep(arrayfun(@(x) isequal(x.Ante,testAntes(i,:)),rep))];
+    disp(['{', sprintf('%s, %s, %s',vars{rec.Ante}),'} => ',...
+        sprintf('{%s}', vars{rec.Conseq})])
+    fprintf('   Conf: %.2f Lift: %.2f Sup: %.2f\n',rec.Conf,rec.Lift,rec.Sup)
+    if isequal(rec.Conseq,testConseqs(i));
+        fprintf('   Correct!  Expected Conf %.2f\n\n',testConf(i))
+    end
+end
+
+% visualize conf, lift and support
+conf = arrayfun(@(x) x.Conf, rules); % get conf as a vector
+lift = arrayfun(@(x) x.Lift, rules); % get lift as a vector
+sup = arrayfun(@(x) x.Sup, rules); % get support as a vector
+scatter(sup,conf,lift*30, lift, 'filled')
+xlabel('Support'); ylabel('Confidence')
+t = colorbar('peer',gca);
+set(get(t,'ylabel'),'String', 'Lift');
+title('1984 Congressional Voting Records')
+
+% create an adjacency matrix
+AdjMat = zeros(length(vars));
+party = [dem,rep];
+for i = 1:length(party)
+    for j = 1:length(party(i).Ante)
+        AdjMat(party(i).Ante(j),party(i).Conseq) =...
+            AdjMat(party(i).Ante(j),party(i).Conseq) + 1;
+    end
+end
+
+% create a biograph object from the matrix
+graph = biograph(AdjMat,vars,'ShowWeights','on','LayoutType','equilibrium');
+% optimize the graph layout
+dolayout(graph);
+% visualize the graph. 
+view(graph)
