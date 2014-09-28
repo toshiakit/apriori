@@ -151,11 +151,9 @@ The brute force method of those steps would have you calculate the support and c
 
 Apriori algorithm addresses this issue by generating candidates selectively. To get an intuition, think about the frequency of an itemset that contains some infrequent items. That itemset will never be more frequent than the least frequent item it contains. So if you construct your candidates by combining the frequent itemsets only, starting from 1-itemset and continue to higher levels, then you avoid creating useless candidates. You can see this in action in `aprioriGen.m`.
 
-Let's start with generating frequent itemsets and get their support measures. Function `findFreqItemsets()` takes cell array of vectors that represents the indices of items in items cell array. First we need to convert transactions, which is a cell array of strings, into this format. I created `numeralize()` for this purpose.
+Let's start with generating frequent itemsets and get their support measures. Function `findFreqItemsets()` takes a nested cell array of items where each nested array represents a transaction.
 
 ```
-C = numeralize(transactions);
-
 minSup = 0.6; % minimum support threshold 0.6
 [F,S] = findFreqItemsets(C,minSup);
 fprintf('Minimum Support        : %.2f\n', minSup)
