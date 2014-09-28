@@ -1,0 +1,19 @@
+## Rails
+*.sqlite3
+config/database.yml
+log/*
+tmp/*
+
+## Python
+*.pyc
+
+## generic files to ignore
+*~
+*.lock
+*.DS_Store
+*.swp
+*.out
+
+## repo specific
+*.dat
+*.data
